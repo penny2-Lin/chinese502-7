@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>廬山雲霧中的智慧：詞語互動學習</title>
+    <style>
+        :root {
+            --primary-color: #2d5a27; /* 深綠色代表山林 */
+            --secondary-color: #f0f4f0;
+            --accent-color: #8fb339; /* 嫩綠色 */
+            --text-color: #333;
+            --blue-hole: #3498db;
+            --correct-color: #27ae60;
+            --wrong-color: #e74c3c;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #d1dbd1;
+        }
+
+        /* 標題與圖示整合區塊 */
+        .illustration {
+            width: 100%;
+            min-height: 120px;
+            background: linear-gradient(135deg, #2d5a27 0%, #8fb339 100%);
+            margin-bottom: 30px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 10px 20px;
+            box-sizing: border-box;
+        }
+
+        .illustration h1 {
+            color: white;
+            text-align: center;
+            font-size: 2rem;
+            margin: 0;
+            padding: 0;
+            border-bottom: none;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        .character {
+            font-size: 45px;
+            animation: floating 3s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .story-content {
+            line-height: 2.3;
+            font-size: 1.15rem;
+            text-align: justify;
+            margin-bottom: 40px;
+            background: #fafafa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* 基礎空格樣式 */
+        .blank {
+            display: inline-block;
+            min-width: 90px;
+            border-bottom: 2px solid var(--blue-hole);
+            color: var(--blue-hole);
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            padding: 0 8px;
+            margin: 0 4px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        /* 答對樣式 */
+        .blank.correct { 
+            color: var(--correct-color); 
+            border-bottom: 2px solid transparent; 
+            text-decoration: none !important;
+        }
+
+        /* 答錯樣式：紅色、刪除線、紅色底線 */
+        .blank.wrong { 
+            color: var(--wrong-color) !important; 
+            border-bottom: 2px solid var(--wrong-color) !important; 
+            text-decoration: line-through !important;
+            text-decoration-color: var(--wrong-color);
+            text-decoration-thickness: 2px;
+        }
+
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            background: #e8f0e8;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .word-item {
+            background: white;
+            border: 2px solid var(--primary-color);
+            padding: 8px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .word-item:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .word-item.selected {
+            background: #fdcb6e;
+            border-color: #fdcb6e;
+            color: #333;
+        }
+
+        .word-item.used {
+            opacity: 0.4;
+            cursor: default;
+            pointer-events: none;
+            background: #ddd;
+            border-color: #bbb;
+            color: #888;
+        }
+
+        .detail-panel {
+            background: #fff9db;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #fcc419;
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-title {
+            font-weight: bold;
+            color: #a67c00;
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(45, 90, 39, 0.2);
+        }
+
+        button:hover {
+            background: #1e3d1a;
+            transform: scale(1.05);
+        }
+
+        .feedback-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.3);
+            z-index: 100;
+            text-align: center;
+            display: none;
+            min-width: 320px;
+        }
+
+        .overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 90;
+        }
+
+        /* 手機版適應 */
+        @media (max-width: 600px) {
+            .illustration {
+                flex-direction: column;
+                gap: 5px;
+                padding: 20px 10px;
+            }
+            .illustration h1 {
+                font-size: 1.5rem;
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 整合標題與圖示的 Banner -->
+        <div class="illustration">
+            <span class="character">⛰️</span>
+            <h1>廬山雲霧中的智慧</h1>
+            <span class="character">☁️</span>
+        </div>
+
+        <!-- 詞語自學區 -->
+        <div id="detailPanel" class="detail-panel">
+            <div id="detailTitle" class="detail-title">詞語自學小筆記</div>
+            <div id="detailContent"></div>
+        </div>
+
+        <!-- 詞庫區 -->
+        <div class="word-bank" id="wordBank">
+            <!-- 由 JS 動態生成 -->
+        </div>
+
+        <!-- 文章內容 -->
+        <div class="story-content" id="storyContent">
+            我的伯父是一位中學老師，他平時博覽群書，可以說是個<span class="blank" data-answer="學問淵博"></span>的長輩。伯父不但熟悉歷史，更十分<span class="blank" data-answer="擅長"></span>山水繪畫。今年暑假，他帶著我一同前往<span class="blank" data-answer="江西"></span>省旅遊，去探訪那座聞名中外的避暑勝地——<span class="blank" data-answer="廬山"></span>。
+            <br><br>
+            剛抵達山腳時，只見重重山巒<span class="blank" data-answer="綿延"></span>不絕，一眼望不到盡頭。清晨時分，山林間處處是繚繞的<span class="blank" data-answer="煙霧"></span>，水氣在林間<span class="blank" data-answer="瀰漫"></span>，整座大山彷彿披上了一層神祕的薄紗，展現出氣象<span class="blank" data-answer="不凡"></span>的神聖美感。
+            <br><br>
+            伯父站在石階上，望著隱沒在雲氣中的峰頂，語重心長地對我說：「北宋大詩人蘇軾曾寫下『不識廬山真面目，只緣身在此山中』，這兩句詩中其實<span class="blank" data-answer="隱含"></span>了深刻的人生<span class="blank" data-answer="哲理"></span>。」
+            <br><br>
+            伯父解釋道，這就是我們常<span class="blank" data-answer="所謂"></span>的「當局者迷」。當我們身處在事情的中心時，往往看不清全局，只有學會跳脫出來，從不同的角度去觀察，才能真正看見事情的真相。這趟旅程，我不僅看見了美景，更學會了看待世界的新方法。
+        </div>
+
+        <div class="controls">
+            <button onclick="checkAnswers()">核對我的答案</button>
+            <button onclick="resetGame()" style="background:#95a5a6; margin-left:10px; box-shadow:none;">重新開始</button>
+        </div>
+    </div>
+
+    <!-- 彈窗與遮罩 -->
+    <div class="overlay" id="overlay"></div>
+    <div class="feedback-modal" id="feedbackModal">
+        <h2 id="feedbackTitle">挑戰結果</h2>
+        <p id="feedbackText"></p>
+        <button onclick="closeModal()">回文章繼續努力</button>
+    </div>
+
+    <script>
+        const vocabulary = {
+            "學問淵博": { def: "學識豐富。", ex: "林教授學問淵博、涵養深厚，全校師生對他推崇備至。" },
+            "不凡": { def: "出色、與眾不同。", ex: "他的工作能力不錯，剛起步就表現不凡。" },
+            "擅長": { def: "專長，專精於某種技藝或學術。", ex: "他是一位著名的小說家，擅長刻畫人性。" },
+            "廬山": { def: "位於江西省，以雄奇險秀聞名於世的山脈。", ex: "廬山景緻變化萬千，是著名的旅遊勝地。" },
+            "江西": { def: "省名。省內有著名的避暑勝地廬山與景德鎮瓷器。", ex: "江西省人文薈萃，擁有豐富的自然景觀。" },
+            "煙霧": { def: "自然界的水氣凝聚而成的雲霧，或燃燒造成的煙。", ex: "這座湖終年煙霧繚繞，朦朧中別有一番景致。" },
+            "瀰漫": { def: "遍布、滿布。", ex: "入夜後，空氣中瀰漫著一股夜來香的芬芳。" },
+            "綿延": { def: "連續延長。", ex: "峰巒起伏，綿延不絕。" },
+            "隱含": { def: "暗藏、不直接呈現。", ex: "在他成功的背後，其實隱含了許多努力奮鬥的艱辛。" },
+            "哲理": { def: "有關宇宙人生的根本道理。", ex: "老師這一番話很富哲理，使我獲益良多。" },
+            "所謂": { def: "所說的，或指某些人所說的道理。", ex: "他因為貪心而人財兩失，真是所謂賠了夫人又折兵。" }
+        };
+
+        let selectedWord = null;
+
+        function init() {
+            const wordBank = document.getElementById('wordBank');
+            const words = Object.keys(vocabulary);
+            const shuffled = words.sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(word => {
+                const div = document.createElement('div');
+                div.className = 'word-item';
+                div.innerText = word;
+                div.onclick = () => selectWord(word, div);
+                wordBank.appendChild(div);
+            });
+
+            const blanks = document.querySelectorAll('.blank');
+            blanks.forEach(blank => {
+                blank.onclick = () => fillBlank(blank);
+            });
+        }
+
+        function selectWord(word, element) {
+            document.querySelectorAll('.word-item').forEach(el => el.classList.remove('selected'));
+            
+            const panel = document.getElementById('detailPanel');
+            const content = document.getElementById('detailContent');
+            const title = document.getElementById('detailTitle');
+            
+            panel.style.display = 'block';
+            title.innerText = `🔍 詞語詳解：${word}`;
+            content.innerHTML = `<p><strong>【意思】</strong>${vocabulary[word].def}</p><p><strong>【例句】</strong>${vocabulary[word].ex}</p>`;
+
+            selectedWord = word;
+            element.classList.add('selected');
+        }
+
+        function fillBlank(blank) {
+            blank.classList.remove('correct', 'wrong');
+
+            if (!selectedWord) {
+                if (blank.innerText) {
+                    const currentWord = blank.innerText;
+                    selectWord(currentWord, findWordItem(currentWord));
+                }
+                return;
+            }
+
+            if (blank.innerText) {
+                const oldWord = blank.innerText;
+                const oldItem = findWordItem(oldWord);
+                if (oldItem) oldItem.classList.remove('used');
+            }
+
+            blank.innerText = selectedWord;
+            
+            const selectedItem = document.querySelector('.word-item.selected');
+            if (selectedItem) selectedItem.classList.add('used');
+
+            selectedWord = null;
+            document.querySelectorAll('.word-item').forEach(el => el.classList.remove('selected'));
+        }
+
+        function findWordItem(word) {
+            return Array.from(document.querySelectorAll('.word-item')).find(el => el.innerText === word);
+        }
+
+        function checkAnswers() {
+            const blanks = document.querySelectorAll('.blank');
+            let correctCount = 0;
+
+            blanks.forEach(blank => {
+                const answer = blank.getAttribute('data-answer');
+                const userVal = blank.innerText;
+
+                blank.classList.remove('correct', 'wrong');
+
+                if (userVal === answer) {
+                    blank.classList.add('correct');
+                    correctCount++;
+                } else if (userVal) {
+                    blank.classList.add('wrong');
+                }
+            });
+
+            const modal = document.getElementById('feedbackModal');
+            const overlay = document.getElementById('overlay');
+            const title = document.getElementById('feedbackTitle');
+            const text = document.getElementById('feedbackText');
+
+            modal.style.display = 'block';
+            overlay.style.display = 'block';
+
+            if (correctCount === blanks.length) {
+                title.innerText = "🌟 智慧大開！";
+                text.innerText = "你完全掌握了這些詞語，成功領略了廬山的哲理美學！";
+            } else {
+                title.innerText = "🌿 靜心思考";
+                text.innerText = `你答對了 ${correctCount} 個詞語。紅色刪除線代表位置不正確，再嘗試從文章脈絡找答案吧！`;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function resetGame() {
+            location.reload();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
